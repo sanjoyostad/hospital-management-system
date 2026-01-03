@@ -36,7 +36,8 @@ with app.app_context():
 
 @app.route('/')
 def home():
-    return render_template('base.html')
+    # Renders the beautiful landing page
+    return render_template('landing.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -81,6 +82,7 @@ def register():
         db.session.add(new_patient)
         db.session.commit()
         
+        flash('Registration Successful! Please Login.')
         return redirect(url_for('login'))
     return render_template('register.html')
 
@@ -89,28 +91,35 @@ def register():
 @login_required
 def admin_dashboard():
     if current_user.role != 'admin':
-        return "Access Denied"
+        flash('Access Denied')
+        return redirect(url_for('home'))
+    
     doctors = Doctor.query.all()
     patients = Patient.query.all()
-    return render_template('admin/dashboard.html', doctors=doctors, patients=patients)
+    # Passing empty list for appointments for now, or you can query them if needed
+    appointments = Appointment.query.all() 
+    return render_template('admin/dashboard.html', doctors=doctors, patients=patients, appointments=appointments)
 
 @app.route('/add_doctor', methods=['POST'])
 @login_required
 def add_doctor():
     if current_user.role == 'admin':
-        # Logic to add a user with role='doctor' and a Doctor profile
         username = request.form.get('username')
         password = generate_password_hash(request.form.get('password'))
         full_name = request.form.get('full_name')
         specialization = request.form.get('specialization')
         
-        new_user = User(username=username, password=password, role='doctor')
-        db.session.add(new_user)
-        db.session.commit()
-        
-        new_doc = Doctor(user_id=new_user.id, full_name=full_name, specialization=specialization)
-        db.session.add(new_doc)
-        db.session.commit()
+        if User.query.filter_by(username=username).first():
+            flash('Username already exists')
+        else:
+            new_user = User(username=username, password=password, role='doctor')
+            db.session.add(new_user)
+            db.session.commit()
+            
+            new_doc = Doctor(user_id=new_user.id, full_name=full_name, specialization=specialization)
+            db.session.add(new_doc)
+            db.session.commit()
+            flash('Doctor Added Successfully')
         
     return redirect(url_for('admin_dashboard'))
 
@@ -118,7 +127,10 @@ def add_doctor():
 @app.route('/patient')
 @login_required
 def patient_dashboard():
-    # Show available doctors and booking form
+    if current_user.role != 'patient':
+        flash('Access Denied')
+        return redirect(url_for('home'))
+        
     doctors = Doctor.query.all()
     my_appts = Appointment.query.filter_by(patient_id=current_user.patient_profile.id).all()
     return render_template('patient/dashboard.html', doctors=doctors, appointments=my_appts)
@@ -129,7 +141,7 @@ def book_appointment(doctor_id):
     date = request.form.get('date')
     time = request.form.get('time')
     
-    # Constraint: Prevent multiple appointments at same time/doctor
+    # Check if doctor is available (basic check)
     existing = Appointment.query.filter_by(doctor_id=doctor_id, date=date, time=time).first()
     if existing:
         flash('Doctor is already booked for this slot!')
@@ -142,14 +154,17 @@ def book_appointment(doctor_id):
         )
         db.session.add(new_appt)
         db.session.commit()
-        flash('Appointment Booked!')
+        flash('Appointment Booked Successfully!')
     return redirect(url_for('patient_dashboard'))
 
 # --- DOCTOR ROUTES ---
 @app.route('/doctor')
 @login_required
 def doctor_dashboard():
-    # Show appointments assigned to this doctor
+    if current_user.role != 'doctor':
+        flash('Access Denied')
+        return redirect(url_for('home'))
+        
     my_appts = Appointment.query.filter_by(doctor_id=current_user.doctor_profile.id).all()
     return render_template('doctor/dashboard.html', appointments=my_appts)
 
@@ -157,16 +172,21 @@ def doctor_dashboard():
 @login_required
 def update_treatment(appt_id):
     appt = Appointment.query.get(appt_id)
-    appt.diagnosis = request.form.get('diagnosis')
-    appt.prescription = request.form.get('prescription')
-    appt.status = 'Completed'
-    db.session.commit()
+    if appt and appt.doctor_id == current_user.doctor_profile.id:
+        appt.diagnosis = request.form.get('diagnosis')
+        appt.prescription = request.form.get('prescription')
+        appt.status = 'Completed'
+        db.session.commit()
+        flash('Treatment Updated')
+    else:
+        flash('Unauthorized')
     return redirect(url_for('doctor_dashboard'))
 
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
+    flash('You have been logged out.')
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
