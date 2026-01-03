@@ -1,0 +1,98 @@
+/* --- CUSTOM COLOR PALETTE --- */
+:root {
+    --color-bg: #EBF4DD;       /* Light Beige/Green */
+    --color-sage: #90AB8B;     /* Sage Green */
+    --color-forest: #5A7863;   /* Dark Green */
+    --color-dark: #3B4953;     /* Dark Slate */
+}
+
+body {
+    background-color: var(--color-bg);
+    color: var(--color-dark);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Navbar & Footer Styling */
+.bg-custom-dark {
+    background-color: var(--color-dark) !important;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    color: var(--color-bg) !important;
+}
+
+.nav-link {
+    color: rgba(235, 244, 221, 0.8) !important;
+}
+
+.nav-link:hover {
+    color: #ffffff !important;
+}
+
+/* Buttons Overrides */
+.btn-primary {
+    background-color: var(--color-forest);
+    border-color: var(--color-forest);
+}
+
+.btn-primary:hover {
+    background-color: var(--color-dark);
+    border-color: var(--color-dark);
+}
+
+.btn-outline-secondary {
+    color: var(--color-dark);
+    border-color: var(--color-dark);
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--color-dark);
+    color: var(--color-bg);
+}
+
+/* Card Styling */
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(59, 73, 83, 0.1);
+}
+
+.card-header {
+    background-color: var(--color-forest);
+    color: white;
+    border-radius: 12px 12px 0 0 !important;
+}
+
+/* Alerts */
+.alert-info {
+    background-color: var(--color-sage);
+    color: white;
+    border: none;
+}
+
+/* Landing Page Specifics */
+.hero-text h1 {
+    color: var(--color-dark);
+}
+
+.hero-text span {
+    color: var(--color-forest);
+}
+
+.feature-icon {
+    background-color: var(--color-sage);
+    color: white;
+    font-size: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+h2 {
+    color: var(--color-forest);
+}
